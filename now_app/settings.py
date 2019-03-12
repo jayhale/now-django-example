@@ -25,7 +25,7 @@ SECRET_KEY = '%n*nfl2s%w!dxtx&hhnzb(%c^5n8wv7k6$fjt&tz!)kvrolmjr'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['.now.sh']
+ALLOWED_HOSTS = ['localhost','.now.sh']
 
 
 # Application definition
@@ -74,7 +74,9 @@ WSGI_APPLICATION = 'now_app.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/2.1/ref/settings/#databases
 
-DATABASES = {}
+DATABASES = {
+    'default': dj_database_url.config(conn_max_age=600)
+}
 
 
 # Password validation
