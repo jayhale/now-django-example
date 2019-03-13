@@ -1,6 +1,8 @@
 # Django running on Zeit Now
 
 
+## //TODO: add steps to connect to Digital Ocean Managed Postgres DB.
+
 ## Tutorial
 
 
