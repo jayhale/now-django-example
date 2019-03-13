@@ -8,5 +8,8 @@
     }],
     "routes" : [{
         "src" : "/(.*)", "dest":"/"
-    }]
+    }],
+    "env":{
+        "DATABASE_URL":"<INSERT CONNECTION STRING HERE>",
+    }
 }
