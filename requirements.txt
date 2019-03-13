@@ -1,3 +1,4 @@
 dj-database-url==0.5.0
 Django==2.1.7
 Werkzeug >=0.14,<1
+whitenoise
