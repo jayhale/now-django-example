@@ -247,6 +247,42 @@ postgres://doadmin:<YOUR-PASSWORD>@<YOUR-DATABASE-SERVER>.db.ondigitalocean.com:
 
 _Definitely don't use this default connection string in prod. For prod, create database users with specific permissions.  We only use this connection string because it is easy for a tutorial / proof-of-concept_. 
 
+### Seed the database server with a user
+
+Lambda environments are immutable, and you cannot run environment commands like `python manage.py ...`
+
+One way to seed the database is to run Django commands locally, _before_ deploying to Now (though  connecting to the same database server).
+
+In your environment, set environment variable DATABASE_URL to the database connection string from Digital Ocean. 
+
+```console
+user:~/now-django-example $ export DATABASE_URL=postgres://doadmin:<YOUR-PASSWORD>@<YOUR-DATABASE-SERVER>.db.ondigitalocean.com:25060/defaultdb?sslmode=require
+
+user:~/now-django-example $ echo $DATABASE_URL
+postgres://doadmin:<YOUR-PASSWORD>@<YOUR-DATABASE-SERVER>.db.ondigitalocean.com:25060/defaultdb?sslmode=require
+```
+
+Ensure your local environment has  installed requirements.txt 
+```console
+user:~/now-django-example $ python3 -m pip install -r requirements.txt
+```
+
+Then use manage.py to create a superuser:
+```console
+user:~/now-django-example $ python3 manage.py createsuperuser
+```
+
+Follow Django's instructions to create the super user. 
+
+Run the server and try logging in to make sure the database is seeded correctly. 
+
+```console
+user:~/now-django-example $ python3 manage.py runserver
+```
+Navigate to: https://localhost:8000/admin and log in using the super user you created above. 
+
+Your database is seeded. Stop the server using CTRL+C and proceed with Now deployment. 
+
 ### Modify now.json environment variables and routes. 
 
 `dj_database_url` will look for an environment variable named `DATABASE_URL`.
@@ -295,6 +331,8 @@ $ now
 
 Check your results by visiting https://zeit.co/dashboard/project/now-django-example
 
-You will know if everything worked if you can log into Django admin and add a user. 
+You will know if everything worked if you can log into Django admin and add a user.
+
+Django admin will be available at https://<YOUR-DEPLOYMENT>.now.sh/admin
 
 Good luck!
