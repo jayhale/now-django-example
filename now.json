@@ -5,5 +5,11 @@
         "src": "index.py",
         "use": "@ardent-labs/now-python-wsgi",
         "config": { "maxLambdaSize": "15mb" }
-    }]
+    }],
+    "routes" : [{
+        "src" : "/(.*)", "dest":"/"
+    }],
+    "env":{
+        "DATABASE_URL":"@db-url"
+    }
 }

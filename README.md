@@ -1,6 +1,5 @@
 # Django running on Zeit Now
 
-
 ## Tutorial
 
 
@@ -152,4 +151,150 @@ $ now
 > Success! Deployment ready [57s]
 ```
 
-Check your results by visiting https://zeit.co/dashboard/project/python-wsgi-example
+Check your results by visiting https://zeit.co/dashboard/project/now-django-example
+
+## Ready to add a database? Try Postgres.
+
+### Configure Django Settings
+
+Configure `now_app/settings.py` to accept database connection strings using `dj_database_url`
+
+```
+# now_app/settings.py
+
+import dj_database_url
+
+DATABASES = {'default': dj_database_url.config(conn_max_age=600)}
+
+```
+
+While in `now_app/settings.py`, add `whitenoise`.  WhiteNoiseMiddleware enables Django to serve 
+its own static files. Without whitenoise, Django Admin won't import necessary CSS, and we will use 
+the Django admin to test whether or not our database connection is working.
+
+```
+# now_app/settings.py
+
+MIDDLEWARE = [
+    ... other stuff ...,
+    'whitenoise.middleware.WhiteNoiseMiddleware',
+]
+```
+
+Add both `whitenoise` and `dj_database_url` to requirements.txt
+
+At this point, requirements.txt file should include:
+
+```
+# requirements.txt
+
+dj-database-url==0.5.0
+Django==2.1.7
+Werkzeug >=0.14,<1
+whitenoise
+```
+### Add a pre-compiled Django Postgres adapter: psycopg2
+
+Django needs an adapter like `psycopg2` to connect to Postgres. 
+
+Only certain libraries are available in the lambda environment, and `psycopg2` is not 
+one of them... so simply adding `psycopg2` to `requirements.txt` will not work.
+
+Instead, bundle a pre-compiled `psycopg2` with your project at root level, where Django can import 
+as needed.  `psycopg2` must be compiled for the correct python version and environment.
+
+Fortunately, [@jkehler](https://github.com/jkehler) has done the work for us in this repo:
+[https://github.com/jkehler/awslambda-psycopg2](https://github.com/jkehler/awslambda-psycopg2)
+
+Download package `awslambda-psychopg2` as a zip file, and copy this subfolder into your 
+project's root directory:
+
+`awslambda-psychopg2-master/with_ssl_support/psychopg2-3.6`
+
+Rename folder `psychopg2-3.6` to `psychopg2`
+
+Project directory should look like this:
+```
+/now-django-example
+    /example
+    /now_app
+    /psycopg2 # this one you just added.
+    index.py
+    manage.py
+    now.json
+    README.md
+    requirements.txt
+```
+
+### Create a database server
+
+One easy way to get up and running fast is to use a Digital Ocean Database Cluster. 
+
+ - Log in at digitalocean.com
+ - Select the green 'Create' button in the top right > Databases
+ - Follow instructions to create a PostgreSQL 10 server
+
+Feel free to skip the "getting started" section. 
+
+On the Connection Details panel, select dropdown "Connection String" and Copy. 
+
+Your connection string should look something like this:
+
+```
+postgres://doadmin:<YOUR-PASSWORD>@<YOUR-DATABASE-SERVER>.db.ondigitalocean.com:25060/defaultdb?sslmode=require
+```
+
+
+_Definitely don't use this default connection string in prod. For prod, create database users with specific permissions.  We only use this connection string because it is easy for a tutorial / proof-of-concept_. 
+
+### Modify now.json environment variables and routes. 
+
+`dj_database_url` will look for an environment variable named `DATABASE_URL`.
+
+Your `DATABASE_URL`, however, contains sensitive information, so we will use a [now secret](https://zeit.co/docs/v1/features/env-and-secrets).
+
+```console
+user:~/now-django-example $ now secret add db-url postgres://doadmin:<YOUR-PASSWORD>@<YOUR-DATABASE-SERVER>.db.ondigitalocean.com:25060/defaultdb?sslmode=require
+> Success! Secret db-url added (pejowei) [466ms]
+```
+
+Add environment variable to `now.json`
+
+```json
+{
+    "env":{
+        "DATABASE_URL":"@db-url"
+    }
+}
+```
+
+While editing `now.json`, this is a good time to update routes. 
+
+We want all requests and responses to be routed through the index.py handler file, so your Django
+application needs to be routed like a single-page app.
+
+Add the following to `now.json` to send all requests to your Django wsgi application via index.py:
+
+```json
+{
+    "routes" : [{
+        "src" : "/(.*)", "dest":"/"
+    }],
+}
+```
+
+### Deploy
+
+You can now redeploy (pun intended) your new application:
+```
+$ now
+> Deploying now-django-example under pejowei
+...
+> Success! Deployment ready [57s]
+```
+
+Check your results by visiting https://zeit.co/dashboard/project/now-django-example
+
+You will know if everything worked if you can log into Django admin and add a user. 
+
+Good luck!
