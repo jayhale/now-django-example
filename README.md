@@ -333,6 +333,6 @@ Check your results by visiting https://zeit.co/dashboard/project/now-django-exam
 
 You will know if everything worked if you can log into Django admin and add a user.
 
-Django admin will be available at https://<YOUR-DEPLOYMENT>.now.sh/admin
+Django admin will be available at https://YOUR-DEPLOYMENT.now.sh/admin
 
 Good luck!
